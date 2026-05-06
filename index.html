@@ -1,0 +1,221 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+.gold{color:#B8860B;}
+.gold-bg{background:#FDF3D0;}
+.btn-gold{background:#B8860B;color:#FFF5D0;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:500;cursor:pointer;width:100%;}
+.btn-gold:active{opacity:0.85;}
+.btn-outline{background:transparent;color:#B8860B;border:1.5px solid #B8860B;border-radius:8px;padding:9px 24px;font-size:14px;font-weight:500;cursor:pointer;width:100%;}
+.opt{display:flex;align-items:flex-start;gap:10px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:8px;padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:background 0.15s,border-color 0.15s;}
+.opt.sel{background:#FDF3D0;border-color:#B8860B;}
+.opt-badge{min-width:22px;height:22px;border-radius:4px;background:#E8D9BA;color:#7A5400;font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.opt.sel .opt-badge{background:#B8860B;color:#FFF5D0;}
+.opt-text{font-size:13px;color:var(--color-text-primary);line-height:1.4;}
+.prog-wrap{background:var(--color-background-secondary);border-radius:20px;height:5px;overflow:hidden;margin-bottom:4px;}
+.prog-fill{background:#D4AF37;height:100%;border-radius:20px;transition:width 0.3s;}
+.part-label{font-size:11px;font-weight:500;color:#B8860B;background:#FDF3D0;padding:3px 10px;border-radius:20px;display:inline-block;margin-bottom:12px;}
+.q-text{font-size:14px;font-weight:500;color:var(--color-text-primary);line-height:1.5;margin-bottom:14px;border-left:3px solid #B8860B;padding-left:10px;}
+.score-box{background:#FDF3D0;border-radius:8px;padding:12px;text-align:center;}
+.score-num{font-size:28px;font-weight:500;color:#B8860B;}
+.score-label{font-size:11px;color:#7A5400;margin-bottom:2px;}
+.level-pill{display:inline-block;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:500;}
+.bar-wrap{background:var(--color-background-secondary);border-radius:20px;height:6px;overflow:hidden;}
+.bar-fill{background:#D4AF37;height:100%;border-radius:20px;}
+.warn-box{background:#FFF3CD;border:1px solid #D4AF37;border-radius:8px;padding:10px 14px;margin-top:12px;}
+.section-line{border:none;border-top:0.5px solid var(--color-border-tertiary);margin:16px 0;}
+</style>
+
+<div id="app" style="padding:1rem 0;font-family:var(--font-sans);"></div>
+
+<script>
+const QS = [
+  {p:1,t:"Quando surge uma despesa inesperada, qual é sua reação imediata?",opts:["Fico tranquilo, já tenho reserva para isso.","Fico incomodado, mas consigo resolver sem grandes impactos.","Fico estressado e tenho que cortar algo para conseguir pagar.","Preciso pegar dinheiro emprestado ou usar o limite do banco.","Entro em desespero e não sei o que fazer."]},
+  {p:1,t:"Qual é sua rotina com poupança ou investimentos?",opts:["Possuo plano de investimento mensal e metas definidas.","Economizo com frequência, mesmo que o valor seja pequeno.","Só consigo economizar quando há sobras (o que é raro).","Tento economizar, mas acabo usando para cobrir despesas.","Não economizo nada, nunca sobra e nem penso nisso."]},
+  {p:1,t:"Qual o significado do dinheiro para você?",opts:["Representa liberdade, segurança e possibilidade de crescimento.","É um meio necessário para viver com dignidade.","É algo útil, mas que também traz estresse.","É uma fonte constante de preocupação.","É um problema que só atrapalha minha vida."]},
+  {p:1,t:"Como você lida com seus gastos mensais?",opts:["Tenho controle claro de minhas receitas e despesas.","Faço anotações, mas não sigo planejamento rigoroso.","Tento me controlar, mas frequentemente gasto mais do que devia.","Vivo no limite, gastando tudo o que ganho.","Não tenho ideia de quanto gasto e estou sempre no vermelho."]},
+  {p:1,t:"Como é sua relação com o aprendizado financeiro?",opts:["Estou sempre buscando aprender e aplicar o que aprendo.","Leio ou assisto algo sobre o tema de vez em quando.","Só busco saber mais quando estou em apuros.","Tenho resistência, acho difícil ou cansativo.","Não me interesso, finanças não são para mim."]},
+  {p:1,t:"Quando se trata de dívidas, qual afirmação melhor representa você?",opts:["Raramente me endivido e, quando acontece, resolvo rapidamente.","Tenho dívidas, mas consigo controlá-las.","Vivo fazendo acordos e pagando parcelas atrasadas.","Estou sempre com dívidas acumuladas e mal consigo pagá-las.","Estou totalmente endividado e sem perspectiva de sair."]},
+  {p:1,t:"Ao pensar no seu futuro financeiro, quais são seus sentimentos?",opts:["Otimismo e planejamento claro.","Alguma incerteza, mas com esperança de melhora.","Preocupação, pois não possuo planos definidos.","Medo de nunca alcançar estabilidade.","Desânimo total, acredito que nunca vai mudar."]},
+  {p:1,t:"Qual é sua reação ao ver alguém prosperando financeiramente?",opts:["Sinto-me inspirado e busco entender o que a pessoa fez.","Sinto-me feliz e desejo o mesmo para mim.","Comparo-me com a pessoa e sinto-me inferior.","Acredito que a pessoa teve sorte ou ajuda que eu não tive.","Sinto inveja e me frustro por nunca conseguir o mesmo."]},
+  {p:1,t:"Quando surge uma oportunidade de investimento ou negócio, qual é sua reação?",opts:["Analiso com calma e aproveito se fizer sentido.","Avalio, mas só invisto se for algo muito seguro.","Sinto vontade, mas o medo me impede.","Desacredito e acho que é perigoso demais.","Nem considero, acredito que não é para mim."]},
+  {p:1,t:"Qual frase descreve melhor sua relação com o risco financeiro?",opts:["Aceito riscos calculados como parte do crescimento.","Só arrisco quando tenho garantia ou segurança mínima.","Prefiro evitar ao máximo, mesmo que atrase meus objetivos.","Acredito que risco é sinônimo de perda certa, então evito.","Não corro risco nenhum — prefiro continuar como estou."]},
+  {p:2,t:"Sua reserva de emergência hoje cobre quantos meses do seu custo fixo?",opts:["6 ou mais meses","3 a 5 meses","1 a 2 meses","Menos de 1 mês","Não tenho reserva"]},
+  {p:2,t:"Nos últimos 90 dias, em quantos meses você conseguiu poupar?",opts:["3 meses","2 meses","1 mês","0 meses","Tive que atrasar conta ou pegar empréstimo"]},
+  {p:2,t:"Você sabe seu gasto fixo mensal com boa noção?",opts:["Sim, tenho registrado com clareza","Sim, tenho noção aproximada","Mais ou menos (muito incerto)","Não sei dizer","Evito olhar ou acompanhar"]},
+  {p:2,t:"Cartão de crédito / limite bancário (últimos 30 dias):",opts:["Não usei limite e paguei fatura integral","Usei, mas paguei tudo no vencimento","Paguei o mínimo ou parcelei fatura","Usei rotativo ou limite para fechar o mês","Está acumulando e virou problema"]},
+  {p:2,t:"Sua dívida total (aproximada) em relação à renda mensal:",opts:["0 a 1× a renda","1 a 3× a renda","3 a 6× a renda","6 a 12× a renda","Mais de 12× a renda"]}
+];
+
+const LABELS = ["A","B","C","D","E"];
+const PTS = [5,4,3,2,1];
+
+const EST_IDX = [0,1,3,5,10,11,12,13,14];
+const MEN_IDX = [2,4,6,7,8,9];
+
+const LEVELS = [
+  {min:10,max:19,name:"Mentalidade Bloqueada",bg:"#E8D9BA",color:"#3D2B0A"},
+  {min:20,max:29,name:"Mentalidade Estagnada",bg:"#F5E6B0",color:"#7A5400"},
+  {min:30,max:36,name:"Mentalidade em Transição",bg:"#FDF3D0",color:"#7A5400"},
+  {min:37,max:44,name:"Mentalidade em Construção",bg:"#FDF3D0",color:"#B8860B"},
+  {min:45,max:50,name:"Mentalidade Evoluída",bg:"#B8860B",color:"#FFF5D0"}
+];
+
+const DESCS = [
+  "A relação com dinheiro está limitada por escassez, medo ou negação. Direção: conscientização + reprogramação de crenças.",
+  "Você percebe que precisa mudar, mas falta clareza e constância. Direção: hábito de poupar + estudos básicos.",
+  "Você iniciou mudanças, mas ainda vive oscilações. Direção: metas mensais + revisão semanal.",
+  "Há responsabilidade e visão de médio prazo; ainda existem desafios práticos. Direção: planejamento mais firme.",
+  "Consciência, equilíbrio e visão estratégica. Direção: aprimorar, ensinar e construir liberdade no longo prazo."
+];
+
+let answers = new Array(15).fill(null);
+let current = 0;
+let phase = "intro";
+
+function getLevel(score){
+  return LEVELS.find(l=>score>=l.min&&score<=l.max)||LEVELS[0];
+}
+
+function calcScores(){
+  let er=0,mr=0;
+  EST_IDX.forEach(i=>{if(answers[i]!==null)er+=PTS[answers[i]];});
+  MEN_IDX.forEach(i=>{if(answers[i]!==null)mr+=PTS[answers[i]];});
+  const e50=Math.round((er/45)*50);
+  const m50=Math.round((mr/30)*50);
+  return {er,mr,e50,m50};
+}
+
+function checkContradictions(){
+  const a=answers;
+  let c=0;
+  if(a[0]===0&&(a[10]===3||a[10]===4))c++;
+  if((a[3]===0||a[3]===1)&&(a[12]===3||a[12]===4))c++;
+  if((a[1]===0||a[1]===1)&&(a[11]===3||a[11]===4))c++;
+  if((a[5]===0||a[5]===1)&&(a[13]===3||a[13]===4))c++;
+  if(a[6]===0&&(a[3]===3||a[3]===4))c++;
+  return c;
+}
+
+function render(){
+  const app=document.getElementById("app");
+  if(phase==="intro"){
+    app.innerHTML=`
+<div style="text-align:center;padding:8px 0 20px;">
+  <div style="font-size:11px;font-weight:500;color:#B8860B;letter-spacing:0.06em;margin-bottom:6px;">WEILY TORO MACHADO</div>
+  <div style="font-size:20px;font-weight:500;color:var(--color-text-primary);line-height:1.2;margin-bottom:4px;">Dinheiro chama dinheiro?</div>
+  <div style="font-size:13px;color:var(--color-text-secondary);font-style:italic;margin-bottom:20px;">Só se você mudar sua mentalidade</div>
+  <div style="width:48px;height:3px;background:#D4AF37;margin:0 auto 20px;border-radius:2px;"></div>
+</div>
+<div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:12px;padding:1rem 1.25rem;margin-bottom:16px;">
+  <div style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px;">Atividade final — Capítulo 1</div>
+  <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:10px;">Descubra seu nível de mentalidade financeira com este questionário de 15 questões dividido em dois blocos.</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+    <div style="background:#FDF3D0;border-radius:8px;padding:8px;text-align:center;">
+      <div style="font-size:11px;color:#7A5400;margin-bottom:2px;">Parte 1</div>
+      <div style="font-size:16px;font-weight:500;color:#B8860B;">10 questões</div>
+      <div style="font-size:11px;color:#7A5400;">Mentalidade</div>
+    </div>
+    <div style="background:#FDF3D0;border-radius:8px;padding:8px;text-align:center;">
+      <div style="font-size:11px;color:#7A5400;margin-bottom:2px;">Parte 2</div>
+      <div style="font-size:16px;font-weight:500;color:#B8860B;">5 questões</div>
+      <div style="font-size:11px;color:#7A5400;">Estrutura real</div>
+    </div>
+  </div>
+</div>
+<div style="font-size:12px;color:var(--color-text-tertiary);text-align:center;margin-bottom:16px;">Responda com sinceridade. O objetivo não é "tirar nota alta" — é descobrir a verdade.</div>
+<button class="btn-gold" onclick="phase='quiz';current=0;render();">Iniciar questionário</button>`;
+    return;
+  }
+
+  if(phase==="quiz"){
+    const q=QS[current];
+    const prog=Math.round(((current)/15)*100);
+    const isNewPart=current===10;
+    let html=`
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+  <span style="font-size:11px;color:var(--color-text-tertiary);">Questão ${current+1} de 15</span>
+  <span style="font-size:11px;color:#B8860B;">${prog}%</span>
+</div>
+<div class="prog-wrap"><div class="prog-fill" style="width:${prog}%;"></div></div>
+<div style="margin-bottom:16px;"></div>`;
+
+    if(isNewPart){
+      html+=`<div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:12px;padding:1rem;margin-bottom:16px;text-align:center;">
+  <div style="font-size:13px;font-weight:500;color:#B8860B;margin-bottom:4px;">Parte 2 — Estrutura verificável</div>
+  <div style="font-size:12px;color:var(--color-text-secondary);">Agora responda sobre sua situação financeira real dos últimos 30–90 dias.</div>
+</div>`;
+    } else if(current===0){
+      html+=`<div class="part-label">Parte 1 — Mentalidade</div>`;
+    }
+
+    html+=`<div class="q-text">${q.t}</div>`;
+    q.opts.forEach((o,i)=>{
+      const sel=answers[current]===i?"sel":"";
+      html+=`<div class="opt ${sel}" onclick="answers[${current}]=${i};render();">
+  <span class="opt-badge">${LABELS[i]}</span>
+  <span class="opt-text">${o}</span>
+</div>`;
+    });
+
+    html+=`<div style="margin-top:16px;display:flex;gap:8px;">`;
+    if(current>0){
+      html+=`<button class="btn-outline" style="flex:0.4;" onclick="current--;render();">Voltar</button>`;
+    }
+    const canNext=answers[current]!==null;
+    if(current<14){
+      html+=`<button class="btn-gold" style="flex:1;opacity:${canNext?1:0.4};" ${canNext?"":"disabled"} onclick="current++;render();">Próxima</button>`;
+    } else {
+      html+=`<button class="btn-gold" style="flex:1;opacity:${canNext?1:0.4};" ${canNext?"":"disabled"} onclick="phase='result';render();">Ver resultado</button>`;
+    }
+    html+=`</div>`;
+    app.innerHTML=html;
+    return;
+  }
+
+  if(phase==="result"){
+    const {er,mr,e50,m50}=calcScores();
+    const finalScore=Math.min(e50,m50);
+    const lvl=getLevel(finalScore);
+    const lvlIdx=LEVELS.indexOf(lvl);
+    const contrad=checkContradictions();
+    const needsVal=contrad>=2||(m50-e50>=10);
+    const pct50=(v)=>Math.round((v/50)*100);
+
+    app.innerHTML=`
+<div style="text-align:center;margin-bottom:16px;">
+  <div style="font-size:11px;color:var(--color-text-tertiary);margin-bottom:6px;">seu resultado</div>
+  <div style="width:72px;height:72px;border-radius:50%;border:3px solid #D4AF37;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;">
+    <span style="font-size:22px;font-weight:500;color:#B8860B;">${finalScore}</span>
+  </div>
+  <span class="level-pill" style="background:${lvl.bg};color:${lvl.color};">${lvl.name}</span>
+</div>
+<div style="font-size:12px;color:var(--color-text-secondary);text-align:center;line-height:1.5;margin-bottom:16px;">${DESCS[lvlIdx]}</div>
+<hr class="section-line">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+  <div class="score-box">
+    <div class="score-label">Estrutura</div>
+    <div class="score-num">${e50}</div>
+    <div style="font-size:10px;color:#B8860B;">de 50</div>
+  </div>
+  <div class="score-box">
+    <div class="score-label">Mentalidade</div>
+    <div class="score-num">${m50}</div>
+    <div style="font-size:10px;color:#B8860B;">de 50</div>
+  </div>
+</div>
+<div style="margin-bottom:8px;">
+  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--color-text-tertiary);margin-bottom:4px;"><span>Estrutura</span><span>${e50}/50</span></div>
+  <div class="bar-wrap"><div class="bar-fill" style="width:${pct50(e50)}%;"></div></div>
+</div>
+<div style="margin-bottom:16px;">
+  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--color-text-tertiary);margin-bottom:4px;"><span>Mentalidade</span><span>${m50}/50</span></div>
+  <div class="bar-wrap"><div class="bar-fill" style="width:${pct50(m50)}%;"></div></div>
+</div>
+${needsVal?`<div class="warn-box"><div style="font-size:12px;font-weight:500;color:#7A5400;margin-bottom:4px;">Precisa validação</div><div style="font-size:12px;color:#7A5400;line-height:1.5;">Há diferença entre percepção e prática. Revise seus números reais: reserva, dívidas, constância de poupança e controle de gastos.</div></div>`:""}
+<hr class="section-line">
+<button class="btn-outline" onclick="answers=new Array(15).fill(null);current=0;phase='intro';render();">Refazer atividade</button>`;
+  }
+}
+
+render();
+</script>
